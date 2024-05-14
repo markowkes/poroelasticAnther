@@ -17,15 +17,6 @@ function solver()
     x = LinRange(0, L, Nx)  
     dx = x[2] - x[1]                
 
-    # Compute loading - Ditribute L over center grid cell(s)
-    qn = zeros(Nx)
-    if Nx % 2==0 # even Nx => split force over 2 center cells 
-        qn[Int(Nx/2)  ] = L/(2*dx)
-        qn[Int(Nx/2)+1] = L/(2*dx)
-    else
-        qn[Int(floor(Nx/2))+1] = L/dx 
-    end
-
     # Create A operator
     A = createAop(x,dt,η,λ)
 
@@ -43,6 +34,17 @@ function solver()
         
         # Update time 
         t += dt
+
+        # Compute loading - Ditribute L over center grid cell(s)
+        qn = zeros(Nx)
+        # if Nx % 2==0 # even Nx => split force over 2 center cells 
+        #     qn[Int(Nx/2)  ] = L/(2*dx)
+        #     qn[Int(Nx/2)+1] = L/(2*dx)
+        # else
+        #     qn[Int(floor(Nx/2))+1] = L/dx 
+        # end
+        f=20
+        qn = sin(t*f)*sin.(2*pi*x/1)
 
         # Compute RHS using tⁿ quantities
         for i = 3:Nx-2 # Interior points for w
@@ -121,9 +123,10 @@ function createAop(x,dt,η,λ)
         A[Nx+i,i+1   ] =   λ/dx^2
     end
     # Boundary conditions @ x=0
-    A[Nx+1,Nx+1] =  4/(2dx) # dM/dx = 0
-    A[Nx+1,Nx  ] = -3/(2dx)
-    A[Nx+1,Nx+2] = -1/(2dx)
+    # A[Nx+1,Nx+1] =  4/(2dx) # dM/dx(x=0) = 0
+    # A[Nx+1,Nx+2] = -3/(2dx)
+    # A[Nx+1,Nx+3] = -1/(2dx)
+    A[Nx+1,Nx+1] = 1  # M(x=0) = 0
     # Boundary condition @ x=L 
     A[2Nx,2Nx] = 1 # M = 0
 
